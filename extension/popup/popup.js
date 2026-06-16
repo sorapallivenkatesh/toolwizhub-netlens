@@ -11,12 +11,6 @@ const app = document.getElementById("app");
 const siteEl = document.getElementById("site");
 let active = { tabId: null, pageDomain: "", records: [], summary: null };
 
-// in-depth report site: localhost when run unpacked (dev), the live site once published.
-// Store-installed extensions carry `update_url` in the manifest; unpacked builds don't.
-const isDev = !("update_url" in chrome.runtime.getManifest());
-const REPORT_SITE = isDev ? "http://localhost:8090" : "https://netlens.toolwizhub.com";
-const b64e = (s) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-
 const fmtBytes = (n) => {
   if (!n) return "0";
   if (n < 1024) return n + " B";
@@ -102,9 +96,9 @@ document.getElementById("export").addEventListener("click", () => {
 });
 
 document.getElementById("report").addEventListener("click", () => {
-  if (!active.summary) return;
-  const payload = { page: active.pageDomain, capturedAt: new Date().toISOString(), summary: active.summary };
-  chrome.tabs.create({ url: `${REPORT_SITE}/report.html#r=${b64e(JSON.stringify(payload))}` });
+  if (active.tabId == null) return;
+  chrome.runtime.sendMessage({ type: "netlens:open", tabId: active.tabId });
+  window.close();
 });
 
 load();

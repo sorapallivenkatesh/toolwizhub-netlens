@@ -3,7 +3,7 @@
   "name": "NetLens — Network Analyzer",
   "version": "0.1.0",
   "description": "See who any website talks to — trackers, ads, APIs, CDNs — categorized live. Runs 100% locally, nothing uploaded.",
-  "permissions": ["webRequest", "storage", "tabs"],
+  "permissions": ["webRequest", "storage", "tabs", "scripting"],
   "host_permissions": ["<all_urls>"],
   "background": { "service_worker": "background.js", "type": "module" },
   "action": {

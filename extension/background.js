@@ -7,6 +7,12 @@
 import { classify } from "./core/classify.js";
 import { etld1 } from "./core/etld.js";
 import { piiInUrl } from "./core/pii.js";
+import { summarize } from "./core/aggregate.js";
+
+// in-depth report site: localhost when unpacked (dev), the live site once published
+const isDev = !("update_url" in chrome.runtime.getManifest());
+const REPORT_SITE = isDev ? "http://localhost:8090" : "https://netlens.toolwizhub.com";
+const b64e = (s) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 
 const tabs = new Map(); // tabId → { pageDomain, byId: Map<requestId,rec>, byUrl: Map<url,rec> }
 
@@ -113,6 +119,31 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     chrome.storage.session.get("tab:" + id).then((s) => sendResponse(s["tab:" + id] || { pageDomain: "", security: {}, records: [] }));
     return true; // async
   }
+  if (msg?.type === "netlens:open") { openReport(msg.tabId); return; }
+});
+
+// open the in-depth report (shareable #r= summary in the URL) and inject the FULL
+// records into the page once it loads, so the explorer/waterfall have everything.
+const pendingInject = new Map(); // reportTabId → full payload
+async function openReport(tabId) {
+  const t = tabs.get(tabId);
+  const records = t ? [...t.byId.values()] : [];
+  const page = t ? t.pageDomain : "";
+  const security = t ? t.security : {};
+  const summary = summarize(records);
+  const capturedAt = new Date().toISOString();
+  const hash = b64e(JSON.stringify({ page, capturedAt, summary }));
+  const created = await chrome.tabs.create({ url: `${REPORT_SITE}/report.html#r=${hash}` });
+  pendingInject.set(created.id, { page, capturedAt, summary, security, records });
+}
+chrome.tabs.onUpdated.addListener((tabId, info) => {
+  if (info.status !== "complete" || !pendingInject.has(tabId)) return;
+  const data = pendingInject.get(tabId);
+  pendingInject.delete(tabId);
+  chrome.scripting.executeScript({
+    target: { tabId }, world: "MAIN", args: [data],
+    func: (d) => { window.__NETLENS__ = d; window.dispatchEvent(new CustomEvent("netlens:data", { detail: d })); },
+  }).catch(() => {});
 });
 
 function safeHost(url) { try { return new URL(url).hostname; } catch { return ""; } }
