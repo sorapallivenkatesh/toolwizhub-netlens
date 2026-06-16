@@ -1,0 +1,10 @@
+{
+  "name": "netlens",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "NetLens — a privacy-first browser extension that categorizes every network request a site makes. Runs 100% locally.",
+  "scripts": {
+    "test": "node tests/classify.test.js"
+  }
+}
