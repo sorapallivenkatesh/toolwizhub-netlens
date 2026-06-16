@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NetLens — See who any website talks to | ToolWizHub</title>
+  <meta name="description" content="NetLens is a privacy-first browser extension that categorizes every network request a site makes — trackers, ads, APIs, CDNs — with a privacy grade. Runs 100% locally." />
+
+  <meta name="theme-color" content="#07070d" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://netlens.toolwizhub.com/" />
+
+  <meta property="og:title" content="NetLens — See who any website talks to" />
+  <meta property="og:description" content="Categorize every network request a site makes — trackers, ads, APIs, CDNs — with a privacy grade. Runs 100% locally." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://netlens.toolwizhub.com" />
+  <meta property="og:image" content="https://netlens.toolwizhub.com/assets/logo-full.webp" />
+  <meta property="og:site_name" content="ToolWizHub" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NetLens — See who any website talks to" />
+  <meta name="twitter:description" content="Categorize every network request a site makes, with a privacy grade. Runs 100% locally." />
+  <meta name="twitter:image" content="https://netlens.toolwizhub.com/assets/logo-full.webp" />
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "NetLens",
+      "url": "https://netlens.toolwizhub.com/",
+      "description": "Privacy-first browser extension that categorizes every network request a website makes, with a privacy grade. Runs 100% locally.",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Chrome, Edge",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "publisher": { "@type": "Organization", "name": "ToolWizHub", "url": "https://toolwizhub.com" }
+    }
+  </script>
+
+  <link rel="icon" type="image/webp" href="assets/favicon.webp" />
+  <link rel="apple-touch-icon" href="assets/logo-icon.webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script>
+    try { if (sessionStorage.getItem("netlens:splashed")) document.documentElement.classList.add("no-splash"); } catch (e) {}
+  </script>
+</head>
+<body>
+  <div class="splash" id="splash" aria-hidden="true">
+    <div class="splash__stage">
+      <div class="splash__glow"></div>
+      <img class="splash__logo" src="assets/logo-full.webp" alt="ToolWizHub" width="200" height="200" />
+      <div class="splash__tagline">NetLens</div>
+      <div class="splash__bar"><span></span></div>
+    </div>
+  </div>
+
+  <header class="appbar">
+    <a class="brand" href="https://toolwizhub.com" aria-label="ToolWizHub NetLens">
+      <img class="brand__mark" src="assets/logo-icon.webp" alt="ToolWizHub" width="42" height="42" />
+      <span class="brand__text"><strong>ToolWizHub</strong><span>NETLENS</span></span>
+    </a>
+    <nav class="appbar__links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/sorapallivenkatesh/toolwizhub-netlens" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+
+  <main class="main">
+    <section class="hero">
+      <span class="hero__eyebrow">🔭 Browser extension · Chrome &amp; Edge</span>
+      <h1 class="hero__title">See who any website <span class="grad">talks to</span>.</h1>
+      <p class="hero__sub">NetLens watches every network request a page makes in the background and breaks it down by category — trackers, ads, APIs, CDNs, fonts — with a privacy grade. No DevTools, no setup.</p>
+      <div class="hero__cta">
+        <a class="btn btn--primary" href="#install">Get NetLens</a>
+        <a class="btn btn--ghost" href="https://github.com/sorapallivenkatesh/toolwizhub-netlens" target="_blank" rel="noopener">View on GitHub →</a>
+      </div>
+      <span class="privacy">🔒 Runs 100% in your browser — nothing is uploaded.</span>
+    </section>
+
+    <section class="section" id="features">
+      <h2 class="section__title">What it shows</h2>
+      <p class="section__lead">Turn the raw network firehose into a clear, categorized picture.</p>
+      <div class="features">
+        <div class="feature"><div class="feature__ic">🏷️</div><h3>Category breakdown</h3><p>Analytics, ads, social, tag managers, CDNs, fonts, monitoring, payment, support, video — matched to known vendors.</p></div>
+        <div class="feature"><div class="feature__ic">🛡️</div><h3>Privacy grade</h3><p>An A–F grade from third-party and tracker counts, so you know at a glance how chatty a site is.</p></div>
+        <div class="feature"><div class="feature__ic">🌐</div><h3>First vs third party</h3><p>Every external domain a site contacts, grouped by registrable domain and company.</p></div>
+        <div class="feature"><div class="feature__ic">📊</div><h3>Sizes &amp; counts</h3><p>Requests and transfer bytes per category and per domain — see what's bloating the page.</p></div>
+        <div class="feature"><div class="feature__ic">📤</div><h3>Export &amp; share</h3><p>Download the report as JSON, or open the in-depth report page (a shareable link).</p></div>
+        <div class="feature"><div class="feature__ic">🔒</div><h3>Local-only</h3><p>All analysis runs in your browser. The vendor dataset ships in the extension — no phone-home.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="how">
+      <h2 class="section__title">How it works</h2>
+      <div class="steps">
+        <div class="step"><h3>Install &amp; pin</h3><p>Add NetLens to Chrome or Edge and pin it to your toolbar.</p></div>
+        <div class="step"><h3>Browse normally</h3><p>It captures requests passively in the background on every tab.</p></div>
+        <div class="step"><h3>Open the popup</h3><p>See the privacy grade, category bars, and third-party domains for the active tab.</p></div>
+        <div class="step"><h3>Go in-depth</h3><p>Open the full report page for charts, the complete domain table, and export.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="install">
+      <h2 class="section__title">Install</h2>
+      <p class="section__lead">Chrome Web Store listing is coming soon. Until then, load it unpacked:</p>
+      <div class="install">
+        <ol>
+          <li>Clone or download <a class="grad" href="https://github.com/sorapallivenkatesh/toolwizhub-netlens" target="_blank" rel="noopener">toolwizhub-netlens</a>.</li>
+          <li>Open <code>chrome://extensions</code> and enable <strong>Developer mode</strong>.</li>
+          <li>Click <strong>Load unpacked</strong> and select the extension folder.</li>
+          <li>Open any site, reload it once, then click the NetLens icon.</li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <a class="app-footer__brand" href="https://toolwizhub.com" target="_blank" rel="noopener">
+      <span>More free tools at</span>
+      <img src="assets/logo-horizontal.webp" alt="ToolWizHub" />
+    </a>
+    <span class="app-footer__copy">© 2026 ToolWizHub · Privacy-first, no tracking.</span>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

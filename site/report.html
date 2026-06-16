@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NetLens — Report</title>
+  <meta name="description" content="In-depth NetLens network report — categories, domains, sizes and privacy grade." />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#07070d" />
+  <link rel="icon" type="image/webp" href="assets/favicon.webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="appbar">
+    <a class="brand" href="/" aria-label="ToolWizHub NetLens">
+      <img class="brand__mark" src="assets/logo-icon.webp" alt="ToolWizHub" width="42" height="42" />
+      <span class="brand__text"><strong>ToolWizHub</strong><span>NETLENS REPORT</span></span>
+    </a>
+    <nav class="appbar__links"><a href="/">← NetLens</a></nav>
+  </header>
+
+  <main class="report" id="report">
+    <div class="report__empty" id="empty">
+      <h2>No report loaded</h2>
+      <p>Open the in-depth report from the NetLens extension popup — or drop an exported <code>netlens-*.json</code> here.</p>
+      <label class="drop" id="drop">Drop a NetLens JSON file, or click to choose
+        <input type="file" id="file" accept="application/json,.json" hidden />
+      </label>
+    </div>
+  </main>
+
+  <script type="module" src="js/report.js"></script>
+</body>
+</html>

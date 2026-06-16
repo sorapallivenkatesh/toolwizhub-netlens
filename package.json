@@ -1,0 +1,12 @@
+{
+  "name": "toolwizhub-netlens",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "NetLens — privacy-first network-analyzer browser extension + its landing/report site.",
+  "scripts": {
+    "test": "node extension/tests/classify.test.js",
+    "site": "python3 -m http.server 8090 --directory site",
+    "pack": "cd extension && zip -r -X ../netlens-extension.zip . -x '.*' -x '*/.*'"
+  }
+}
