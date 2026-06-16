@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <img src="../icons/48.png" width="22" height="22" alt="" />
+      <span>NetLens</span>
+    </div>
+    <span class="site" id="site">—</span>
+  </header>
+
+  <div class="app" id="app">
+    <div class="empty" id="empty">No requests captured yet.<br /><small>Open or reload a page, then reopen NetLens.</small></div>
+  </div>
+
+  <footer class="foot">
+    <button class="btn" id="export">Export JSON</button>
+    <button class="btn btn--ghost" id="refresh">Reload &amp; capture</button>
+  </footer>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
