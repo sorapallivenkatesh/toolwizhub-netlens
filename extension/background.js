@@ -6,6 +6,7 @@
 
 import { classify } from "./core/classify.js";
 import { etld1 } from "./core/etld.js";
+import { piiInUrl } from "./core/pii.js";
 
 const tabs = new Map(); // tabId → { pageDomain, byId: Map<requestId,rec>, byUrl: Map<url,rec> }
 
@@ -15,7 +16,7 @@ const TYPE = {
   media: "media", websocket: "websocket", ping: "beacon", other: "other",
 };
 
-function fresh() { return { pageDomain: "", byId: new Map(), byUrl: new Map() }; }
+function fresh() { return { pageDomain: "", pageSecure: false, security: {}, byId: new Map(), byUrl: new Map() }; }
 function tab(id) { let t = tabs.get(id); if (!t) tabs.set(id, t = fresh()); return t; }
 
 const saveTimers = new Map();
@@ -24,7 +25,7 @@ function persist(tabId) {
   saveTimers.set(tabId, setTimeout(() => {
     const t = tabs.get(tabId);
     if (!t) return;
-    chrome.storage.session.set({ ["tab:" + tabId]: { pageDomain: t.pageDomain, records: [...t.byId.values()] } }).catch(() => {});
+    chrome.storage.session.set({ ["tab:" + tabId]: { pageDomain: t.pageDomain, security: t.security, records: [...t.byId.values()] } }).catch(() => {});
   }, 400));
 }
 
@@ -42,14 +43,16 @@ chrome.webRequest.onBeforeRequest.addListener((d) => {
   if (d.tabId < 0) return;
   const t = tab(d.tabId);
   if (d.type === "main_frame") {                       // top-level navigation → reset
-    tabs.set(d.tabId, Object.assign(fresh(), { pageDomain: etld1(safeHost(d.url)) }));
+    tabs.set(d.tabId, Object.assign(fresh(), { pageDomain: etld1(safeHost(d.url)), pageSecure: /^https:/i.test(d.url) }));
   }
   const tt = tab(d.tabId);
   const c = classify(d.url, tt.pageDomain);
+  const insecure = /^(http|ws):\/\//i.test(d.url);
   const rec = {
     url: d.url, domain: c.domain, party: c.party, company: c.company,
     category: c.category, tracking: c.tracking, type: TYPE[d.type] || d.type,
     method: d.method, status: null, bytes: 0, error: null, started: d.timeStamp,
+    secure: !insecure, mixed: tt.pageSecure && insecure, cookies: 0, pii: piiInUrl(d.url),
   };
   tt.byId.set(d.requestId, rec);
   tt.byUrl.set(d.url, rec);
@@ -57,11 +60,25 @@ chrome.webRequest.onBeforeRequest.addListener((d) => {
 }, { urls: ["<all_urls>"] });
 
 chrome.webRequest.onHeadersReceived.addListener((d) => {
-  const rec = tab(d.tabId).byId.get(d.requestId);
-  if (!rec) return;
-  const cl = d.responseHeaders?.find((h) => h.name.toLowerCase() === "content-length");
-  if (cl && !rec.bytes) rec.bytes = +cl.value || 0;     // RT (content script) can override later
-}, { urls: ["<all_urls>"] }, ["responseHeaders"]);
+  const t = tab(d.tabId);
+  const rec = t.byId.get(d.requestId);
+  const hdr = d.responseHeaders || [];
+  const get = (n) => hdr.find((h) => h.name.toLowerCase() === n)?.value;
+  if (rec) {
+    const cl = get("content-length");
+    if (cl && !rec.bytes) rec.bytes = +cl || 0;          // RT (content script) can override later
+    const cookies = hdr.filter((h) => h.name.toLowerCase() === "set-cookie").length;
+    if (cookies) rec.cookies += cookies;
+  }
+  if (d.type === "main_frame") {                          // capture the document's security headers
+    t.security = {
+      hsts: !!get("strict-transport-security"),
+      csp: !!get("content-security-policy"),
+      xfo: get("x-frame-options") || null,
+      referrer: get("referrer-policy") || null,
+    };
+  }
+}, { urls: ["<all_urls>"] }, ["responseHeaders", "extraHeaders"]);
 
 chrome.webRequest.onCompleted.addListener((d) => {
   const rec = tab(d.tabId).byId.get(d.requestId);
@@ -92,8 +109,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === "netlens:get") {
     const id = msg.tabId;
     const t = tabs.get(id);
-    if (t) { sendResponse({ pageDomain: t.pageDomain, records: [...t.byId.values()] }); return true; }
-    chrome.storage.session.get("tab:" + id).then((s) => sendResponse(s["tab:" + id] || { pageDomain: "", records: [] }));
+    if (t) { sendResponse({ pageDomain: t.pageDomain, security: t.security, records: [...t.byId.values()] }); return true; }
+    chrome.storage.session.get("tab:" + id).then((s) => sendResponse(s["tab:" + id] || { pageDomain: "", security: {}, records: [] }));
     return true; // async
   }
 });

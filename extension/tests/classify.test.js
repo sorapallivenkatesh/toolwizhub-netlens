@@ -3,6 +3,7 @@ import assert from "node:assert";
 import { etld1 } from "../core/etld.js";
 import { classify } from "../core/classify.js";
 import { summarize, privacyGrade } from "../core/aggregate.js";
+import { piiInUrl } from "../core/pii.js";
 
 let pass = 0;
 const ok = (c, m) => { assert.ok(c, m); pass++; };
@@ -54,5 +55,31 @@ ok(s.domains[0].requests >= s.domains[s.domains.length - 1].requests, "domains s
 ok(privacyGrade(0, 0) === "A", "no trackers → A");
 ok(privacyGrade(2, 3) === "C", "some trackers → C");
 ok(privacyGrade(20, 20) === "F", "many trackers → F");
+ok(privacyGrade(0, 0, 5) > "A", "penalty worsens the grade");
+
+/* ── fingerprinting category ─────────────────────── */
+const fp = classify("https://fingerprint.com/api", "example.com");
+ok(fp.category === "fingerprinting" && fp.tracking, "FingerprintJS → fingerprinting, counts as tracking");
+
+/* ── PII-in-URL detector ─────────────────────────── */
+ok(piiInUrl("https://t.co/p?email=a%40b.com").includes("email"), "email value in query");
+ok(piiInUrl("https://t.co/p?uid=123&phone=9876543210").includes("phone"), "phone param by name");
+ok(piiInUrl("https://t.co/p?ll=12.9716,77.5946").includes("location"), "coordinates by value");
+ok(piiInUrl("https://t.co/p?lat=12.9&lng=77.5").includes("location"), "lat/lng params by name");
+ok(piiInUrl("https://t.co/p?id=42&ts=1718").length === 0, "plain id/timestamp → no PII (no false positive)");
+ok(piiInUrl("not a url").length === 0, "bad URL → [] (no throw)");
+
+/* ── aggregate: new privacy signals ──────────────── */
+const sig = summarize([
+  { url: "http://ads.example.net/x", domain: "example.net", party: "third", category: "ads", type: "script", bytes: 100, tracking: true, secure: false, mixed: true, cookies: 2, pii: [] },
+  { url: "https://collector.io/c?email=a@b.com", domain: "collector.io", party: "third", category: "analytics", type: "beacon", bytes: 50, tracking: true, secure: true, cookies: 1, pii: ["email"] },
+  { url: "https://fingerprint.com/x", domain: "fingerprint.com", party: "third", category: "fingerprinting", type: "script", bytes: 80, tracking: true, secure: true, pii: [] },
+]);
+ok(sig.totals.insecure === 1, "counts insecure (http) requests");
+ok(sig.totals.mixed === 1, "counts mixed-content requests");
+ok(sig.totals.cookies === 3, "sums Set-Cookie counts");
+ok(sig.totals.fingerprinters === 1, "counts third-party fingerprinters");
+ok(sig.totals.piiLeaks === 1, "counts PII-leaking requests");
+ok(sig.pii.length === 1 && sig.pii[0].types.includes("email"), "PII grouped by domain with types");
 
 console.log(`✓ all ${pass} NetLens core assertions passed`);

@@ -103,7 +103,12 @@ export const TRACKERS = {
   // a/b testing
   "optimizely.com": { company: "Optimizely", category: "abtest" },
   "vwo.com": { company: "VWO", category: "abtest" },
+
+  // fingerprinting
+  "fingerprint.com": { company: "FingerprintJS", category: "fingerprinting" },
+  "fpjs.io": { company: "FingerprintJS", category: "fingerprinting" },
+  "fingerprintjs.com": { company: "FingerprintJS", category: "fingerprinting" },
 };
 
 // categories that count toward the "tracker" privacy tally / badge
-export const TRACKING_CATEGORIES = new Set(["analytics", "ads", "social", "abtest"]);
+export const TRACKING_CATEGORIES = new Set(["analytics", "ads", "social", "abtest", "fingerprinting"]);
