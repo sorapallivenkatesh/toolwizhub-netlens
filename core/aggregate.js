@@ -1,9 +1,20 @@
 /* core/aggregate.js — PURE. Turn an array of classified request records into the
-   summary the popup renders. No DOM, no chrome APIs. */
+   summary the popup renders. No DOM, no chrome APIs.
+   record: { url, domain, party, company, category, type, status, bytes, error, tracking } */
 
 function bump(obj, key, bytes) {
   const e = obj[key] || (obj[key] = { requests: 0, bytes: 0 });
   e.requests++; e.bytes += bytes;
+}
+
+/** A→F privacy grade from tracker + third-party counts (lower is cleaner). */
+export function privacyGrade(trackers, thirdParties) {
+  const score = trackers * 2 + thirdParties;
+  if (score === 0) return "A";
+  if (score <= 4) return "B";
+  if (score <= 10) return "C";
+  if (score <= 20) return "D";
+  return "F";
 }
 
 export function summarize(records) {
@@ -31,6 +42,7 @@ export function summarize(records) {
   }
 
   totals.thirdParties = tpDomains.size;
+  totals.grade = privacyGrade(totals.trackers, totals.thirdParties);
   const domains = [...domainMap.values()].sort((a, b) => b.requests - a.requests || b.bytes - a.bytes);
   return { totals, byType, byCategory, byParty, domains };
 }
