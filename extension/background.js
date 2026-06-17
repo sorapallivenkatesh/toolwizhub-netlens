@@ -22,7 +22,7 @@ const TYPE = {
   media: "media", websocket: "websocket", ping: "beacon", other: "other",
 };
 
-function fresh() { return { pageDomain: "", pageSecure: false, security: {}, byId: new Map(), byUrl: new Map() }; }
+function fresh() { return { pageDomain: "", pageSecure: false, security: {}, count: 0, byId: new Map(), byUrl: new Map() }; }
 function tab(id) { let t = tabs.get(id); if (!t) tabs.set(id, t = fresh()); return t; }
 
 const saveTimers = new Map();
@@ -35,14 +35,33 @@ function persist(tabId) {
   }, 400));
 }
 
-function setBadge(tabId) {
-  const t = tabs.get(tabId);
-  const n = t ? [...t.byId.values()].filter((r) => r.tracking).length : 0;
-  chrome.action.setBadgeText({ tabId, text: n ? String(n) : "" }).catch(() => {});
+// per-tab "scanning" badge: counts requests on cyan while a page loads, then settles
+// (stays on screen) to the request count on the brand fuchsia ~1.2s after the last
+// request. Each tab keeps its own count; switching tabs shows that tab's count, and
+// navigating to a new page resets it and counts again.
+const BADGE_LIVE = "#22d3ee", BADGE_DONE = "#e879f9";
+const settleTimers = new Map();
+const badgeText = (n) => (n > 999 ? "999+" : n ? String(n) : "");
+function paintBadge(tabId, n, live) {
+  chrome.action.setBadgeBackgroundColor({ tabId, color: live ? BADGE_LIVE : BADGE_DONE }).catch(() => {});
+  chrome.action.setBadgeText({ tabId, text: badgeText(n) }).catch(() => {});
 }
+function liveBadge(tabId, n) {
+  paintBadge(tabId, n, true);
+  clearTimeout(settleTimers.get(tabId));
+  settleTimers.set(tabId, setTimeout(() => settleBadge(tabId), 1200));
+}
+function settleBadge(tabId) {
+  settleTimers.delete(tabId);
+  paintBadge(tabId, tabs.get(tabId)?.count || 0, false);   // count stays on the icon
+}
+// when the user switches tabs, re-show that tab's count (live colour if still loading)
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  const t = tabs.get(tabId);
+  if (t) paintBadge(tabId, t.count, settleTimers.has(tabId));
+});
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.action.setBadgeBackgroundColor({ color: "#e879f9" }).catch(() => {});
   chrome.contextMenus.create({ id: "netlens-report", title: "Analyze this page with NetLens", contexts: ["page", "action"] }, () => void chrome.runtime.lastError);
 });
 chrome.contextMenus?.onClicked.addListener((info, tab) => {
@@ -66,6 +85,8 @@ chrome.webRequest.onBeforeRequest.addListener((d) => {
   };
   tt.byId.set(d.requestId, rec);
   tt.byUrl.set(d.url, rec);
+  tt.count++;
+  liveBadge(d.tabId, tt.count);   // light up + count while the page loads
   persist(d.tabId);
 }, { urls: ["<all_urls>"] });
 
@@ -92,7 +113,7 @@ chrome.webRequest.onHeadersReceived.addListener((d) => {
 
 chrome.webRequest.onCompleted.addListener((d) => {
   const rec = tab(d.tabId).byId.get(d.requestId);
-  if (rec) { rec.status = d.statusCode; setBadge(d.tabId); persist(d.tabId); }
+  if (rec) { rec.status = d.statusCode; persist(d.tabId); }   // badge handled by the live/settle cycle
 }, { urls: ["<all_urls>"] });
 
 chrome.webRequest.onErrorOccurred.addListener((d) => {
@@ -102,6 +123,7 @@ chrome.webRequest.onErrorOccurred.addListener((d) => {
 
 chrome.tabs.onRemoved.addListener((tabId) => {
   tabs.delete(tabId);
+  clearTimeout(settleTimers.get(tabId)); settleTimers.delete(tabId);
   chrome.storage.session.remove("tab:" + tabId).catch(() => {});
 });
 
