@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — NetLens | ToolWizHub</title>
+  <meta name="description" content="NetLens runs 100% in your browser. It collects nothing, sends nothing, and has no servers. Here's exactly what it accesses and why." />
+  <meta name="theme-color" content="#07070d" />
+  <link rel="canonical" href="https://netlens.toolwizhub.com/privacy.html" />
+  <meta property="og:title" content="Privacy Policy — NetLens" />
+  <meta property="og:description" content="NetLens runs 100% locally — collects nothing, sends nothing." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://netlens.toolwizhub.com/privacy.html" />
+  <link rel="icon" type="image/webp" href="assets/favicon.webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script>try { var t = localStorage.getItem("netlens:theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body>
+  <header class="appbar">
+    <a class="brand" href="/" aria-label="ToolWizHub NetLens">
+      <img class="brand__mark" src="assets/logo-icon.webp" alt="ToolWizHub" width="42" height="42" />
+      <span class="brand__text"><strong>ToolWizHub</strong><span>NETLENS</span></span>
+    </a>
+    <nav class="appbar__links"><a href="/">← NetLens</a><button class="theme-toggle" id="theme" aria-label="Toggle light/dark theme" title="Toggle theme">☾</button></nav>
+  </header>
+
+  <main class="legal">
+    <h1>Privacy Policy</h1>
+    <p class="legal__date">NetLens browser extension · Last updated 18 June 2026</p>
+
+    <p class="tldr"><strong>The short version:</strong> NetLens runs <strong>100% in your browser</strong>. It does not collect, store remotely, sell, or transmit any of your data. There are no accounts, no analytics, and no servers that receive your browsing data.</p>
+
+    <h2>What NetLens does</h2>
+    <p>NetLens passively observes the network requests the page you're viewing makes, categorizes them (first- vs third-party, trackers, ads, CDNs, fonts, etc.), and shows you a privacy grade and breakdown. All of this analysis happens locally on your device, in real time.</p>
+
+    <h2>What it accesses — and why</h2>
+    <ul>
+      <li><strong>Network request metadata</strong> (URL, resource type, status, initiator, response headers such as <code>Content-Length</code>, <code>Set-Cookie</code> count, and security headers) — read locally to categorize requests and compute the grade. NetLens uses the <code>webRequest</code> API in <em>observe-only</em> mode; it never blocks or modifies requests.</li>
+      <li><strong>The active tab's URL</strong> — to label the report and attribute requests to the correct tab. It does <strong>not</strong> read page content or request/response bodies.</li>
+      <li><strong>All sites you visit</strong> (<code>&lt;all_urls&gt;</code> host access) — because NetLens analyzes whichever page you choose to view. Access is used solely for the local analysis above.</li>
+    </ul>
+
+    <h2>What it stores</h2>
+    <p>Only on your device, via the browser's storage APIs:</p>
+    <ul>
+      <li>Your <strong>preferences</strong> — the list of domains you've muted (allowlist) and your light/dark theme choice.</li>
+      <li>A <strong>short-lived summary</strong> of the current tab's requests (session storage), so the popup and report page can display it. This is cleared when the tab/session ends.</li>
+    </ul>
+    <p>None of this is ever sent off your device.</p>
+
+    <h2>What it does NOT do</h2>
+    <ul>
+      <li>No data collection, no transmission to any server, no selling or sharing of data.</li>
+      <li>No accounts, sign-in, tracking, advertising, or third-party analytics.</li>
+      <li>No reading of page content, form inputs, passwords, or request/response bodies.</li>
+    </ul>
+
+    <h2>The report page</h2>
+    <p>When you open the in-depth report, NetLens opens a page on <code>netlens.toolwizhub.com</code> and passes the report data to it locally (in the page URL fragment and in-memory). The summary in a shareable link is <strong>masked</strong> and the data is processed in your browser — it is not uploaded to or stored by us. The website itself is static hosting (Cloudflare Pages); standard web-server access logs may record a page visit, but they contain none of your analyzed browsing data.</p>
+
+    <h2>Permissions summary</h2>
+    <ul>
+      <li><code>webRequest</code> + host access — observe requests locally for analysis.</li>
+      <li><code>storage</code> — save your preferences and the transient summary on-device.</li>
+      <li><code>tabs</code> — read the active tab's URL, badge the icon, open the report tab.</li>
+      <li><code>scripting</code> — pass the report data into the report page NetLens opens.</li>
+      <li><code>contextMenus</code> — the "Analyze this page with NetLens" right-click item.</li>
+    </ul>
+
+    <h2>Children</h2>
+    <p>NetLens is a general-purpose developer/privacy tool and is not directed at children. It collects no personal data from anyone.</p>
+
+    <h2>Changes</h2>
+    <p>If this policy changes, the updated version will be posted here with a new date.</p>
+
+    <h2>Contact</h2>
+    <p>Questions? Open an issue at <a href="https://github.com/sorapallivenkatesh/toolwizhub-netlens" target="_blank" rel="noopener">github.com/sorapallivenkatesh/toolwizhub-netlens</a>.</p>
+  </main>
+
+  <footer class="app-footer">
+    <a class="app-footer__brand" href="https://toolwizhub.com" target="_blank" rel="noopener">
+      <span>More free tools at</span>
+      <img src="assets/logo-horizontal.webp" alt="ToolWizHub" />
+    </a>
+    <span class="app-footer__copy">© 2026 ToolWizHub · Privacy-first, no tracking.</span>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
