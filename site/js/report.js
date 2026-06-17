@@ -278,6 +278,7 @@ function explorerCard(records) {
       const dc = el("td"); dc.append(el("span", "dom__d", r.domain)); if (r.company) dc.append(el("span", "dom__c", " · " + r.company)); tr.append(dc);
       tr.append(el("td", null, r.type), el("td", "num", r.error ? "err" : String(r.status || "—")), el("td", "num", fmtBytes(r.bytes || 0)));
       const u = el("td", "url"); u.append(el("span", null, r.url)); tr.append(u);
+      tr.addEventListener("click", () => openDrawer(r));
       tbody.append(tr);
     }
     if (!slice.length) { const tr = el("tr"); tr.append(el("td", "muted-note", "No requests match.")); tbody.append(tr); }
@@ -339,3 +340,54 @@ if (!tryRender(window.__NETLENS__)) {
 }
 // the extension injects after load → re-render with the full record set
 window.addEventListener("netlens:data", (e) => tryRender(e.detail));
+
+/* ── request detail drawer ── */
+let _drawer;
+function ensureDrawer() {
+  if (_drawer) return _drawer;
+  const back = el("div", "drawer-backdrop");
+  const panel = el("aside", "drawer");
+  back.addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
+  document.body.append(back, panel);
+  _drawer = { back, panel };
+  return _drawer;
+}
+function closeDrawer() { if (_drawer) { _drawer.panel.classList.remove("is-open"); _drawer.back.classList.remove("is-open"); } }
+function openDrawer(r) {
+  const { back, panel } = ensureDrawer();
+  panel.replaceChildren();
+  const head = el("div", "drawer__head");
+  const x = el("button", "drawer__close", "✕"); x.addEventListener("click", closeDrawer);
+  head.append(el("span", "drawer__title", r.domain), x);
+  panel.append(head, el("div", "drawer__url", r.url));
+  const add = (k, v, cls) => { if (v == null || v === "") return; const row = el("div", "drawer__row"); row.append(el("span", "drawer__k", k), el("span", "drawer__v" + (cls ? " " + cls : ""), String(v))); panel.append(row); };
+  add("Party", r.party === "third" ? "Third-party" : "First-party");
+  add("Type", r.type);
+  add("Method", r.method);
+  add("Status", r.error ? r.error : (r.status || "—"), r.error ? "bad" : "");
+  add("Size", fmtBytes(r.bytes || 0));
+  add("Duration", r.duration ? Math.round(r.duration) + " ms" : "—");
+  add("Company", r.company);
+  add("Category", r.category ? (CAT_LABELS[r.category] || r.category) : null);
+  add("Cookies set", r.cookies || 0);
+  add("Secure", r.secure === false ? "No — insecure" : "Yes", r.secure === false ? "bad" : "ok");
+  if (r.mixed) add("Mixed content", "Yes", "bad");
+  if (r.tracking) add("Tracker", "Yes", "bad");
+  if (r.pii && r.pii.length) add("PII in URL", r.pii.join(", "), "bad");
+  back.classList.add("is-open"); panel.classList.add("is-open");
+}
+
+/* ── theme toggle (persists in localStorage 'netlens:theme') ── */
+(() => {
+  const btn = document.getElementById("theme");
+  if (!btn) return;
+  const sync = () => { btn.textContent = document.documentElement.dataset.theme === "light" ? "☀" : "☾"; };
+  sync();
+  btn.addEventListener("click", () => {
+    const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("netlens:theme", next); } catch {}
+    sync();
+  });
+})();

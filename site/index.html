@@ -44,6 +44,7 @@
   <link rel="stylesheet" href="css/styles.css" />
   <script>
     try { if (sessionStorage.getItem("netlens:splashed")) document.documentElement.classList.add("no-splash"); } catch (e) {}
+    try { var t = localStorage.getItem("netlens:theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
   </script>
 </head>
 <body>
@@ -66,6 +67,7 @@
       <a href="#how">How it works</a>
       <a href="#install">Install</a>
       <a href="https://github.com/sorapallivenkatesh/toolwizhub-netlens" target="_blank" rel="noopener">GitHub</a>
+      <button class="theme-toggle" id="theme" aria-label="Toggle light/dark theme" title="Toggle theme">☾</button>
     </nav>
   </header>
 

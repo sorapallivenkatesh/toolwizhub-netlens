@@ -12,3 +12,17 @@
   splash.addEventListener("click", hide);
   setTimeout(hide, reduce ? 200 : 1900);
 })();
+
+/* theme toggle (persists in localStorage 'netlens:theme') */
+(function () {
+  const btn = document.getElementById("theme");
+  if (!btn) return;
+  const sync = () => { btn.textContent = document.documentElement.dataset.theme === "light" ? "☀" : "☾"; };
+  sync();
+  btn.addEventListener("click", () => {
+    const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("netlens:theme", next); } catch (e) {}
+    sync();
+  });
+})();

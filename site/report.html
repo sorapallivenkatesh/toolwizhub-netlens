@@ -12,6 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
+  <script>try { var t = localStorage.getItem("netlens:theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
 </head>
 <body>
   <header class="appbar">
@@ -19,7 +20,7 @@
       <img class="brand__mark" src="assets/logo-icon.webp" alt="ToolWizHub" width="42" height="42" />
       <span class="brand__text"><strong>ToolWizHub</strong><span>NETLENS REPORT</span></span>
     </a>
-    <nav class="appbar__links"><a href="/">← NetLens</a></nav>
+    <nav class="appbar__links"><a href="/">← NetLens</a><button class="theme-toggle" id="theme" aria-label="Toggle light/dark theme" title="Toggle theme">☾</button></nav>
   </header>
 
   <main class="report" id="report">
