@@ -325,9 +325,16 @@ function downloadHAR(data) {
 }
 function dl(name, text, mime) { const url = URL.createObjectURL(new Blob([text], { type: mime })); const a = document.createElement("a"); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
 
-/* ── load ── */
-function tryRender(d) { if (d && d.summary) { render(d); return true; } return false; }
-if (!tryRender(window.__NETLENS__)) {
+/* ── load ──
+   The extension injects the FULL payload (with records) once, but it's lost on refresh
+   (the #r= URL only carries the summary). Cache the full payload in sessionStorage —
+   which survives reloads within the tab — so the timeline/explorer persist on refresh. */
+const cacheKey = "netlens:full:" + (location.hash.slice(3) || "x"); // value after "#r="
+function cacheFull(d) { if (d && d.records) { try { sessionStorage.setItem(cacheKey, JSON.stringify(d)); } catch {} } }
+function tryRender(d) { if (d && d.summary) { render(d); cacheFull(d); return true; } return false; }
+
+let cached = null; try { cached = JSON.parse(sessionStorage.getItem(cacheKey) || "null"); } catch {}
+if (!tryRender(window.__NETLENS__) && !tryRender(cached)) {
   const m = location.hash.match(/^#r=(.+)$/);
   if (!tryRender(m ? decode(m[1]) : null)) {
     const drop = document.getElementById("drop"), file = document.getElementById("file");
@@ -338,7 +345,7 @@ if (!tryRender(window.__NETLENS__)) {
     drop?.addEventListener("drop", (e) => readFile(e.dataTransfer?.files?.[0]));
   }
 }
-// the extension injects after load → re-render with the full record set
+// the extension injects after load → re-render (and cache) with the full record set
 window.addEventListener("netlens:data", (e) => tryRender(e.detail));
 
 /* ── request detail drawer ── */
