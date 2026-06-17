@@ -179,7 +179,7 @@ function weightCard(records) {
 
 function waterfallCard(records) {
   const withT = records.filter((r) => r.started).sort((a, b) => a.started - b.started);
-  const rows = withT.slice(0, 80);
+  const rows = withT.slice(0, 300);
   const min = rows.length ? rows[0].started : 0;
   const span = Math.max(1, ...rows.map((r) => (r.started - min) + (r.duration || 0)));
 
@@ -188,14 +188,15 @@ function waterfallCard(records) {
   head.append(el("span", null, "Timeline"), el("span", "wf__total", `${fmtMs(span)} span`));
   c.append(head);
   const body = el("div", "card__body");
+  const scroll = el("div", "wf__scroll");
 
-  /* time axis */
+  /* time axis — sticky at the top of the scroller */
   const axis = el("div", "wf wf--axis");
   axis.append(el("span", "wf__label", ""));
   const ax = el("div", "wf__axis");
   for (let i = 0; i <= 4; i++) { const tick = el("span", "wf__tick", fmtMs((span * i) / 4)); tick.style.left = i * 25 + "%"; ax.append(tick); }
   axis.append(ax, el("span", "wf__dur", ""));
-  body.append(axis);
+  scroll.append(axis);
 
   /* rows */
   for (const r of rows) {
@@ -208,9 +209,10 @@ function waterfallCard(records) {
     bar.title = `${r.type} · ${Math.round(r.duration || 0)}ms · ${fmtBytes(r.bytes || 0)}`;
     track.append(bar);
     row.append(label, track, el("span", "wf__dur", r.duration ? Math.round(r.duration) + "ms" : "—"));
-    body.append(row);
+    scroll.append(row);
   }
-  if (withT.length > rows.length) body.append(el("div", "muted-note", `+${withT.length - rows.length} more (showing first 80 by start time)`));
+  body.append(scroll);
+  if (withT.length > rows.length) body.append(el("div", "muted-note", `+${withT.length - rows.length} more (showing first 300 by start time)`));
 
   /* legend */
   const legend = el("div", "wf__legend");
@@ -238,15 +240,30 @@ function explorerCard(records) {
   table.append(thead);
   const tbody = el("tbody"); table.append(tbody); body.append(table); c.append(body);
 
-  function draw() {
+  // pager
+  const PER = 25; let page = 0;
+  const pager = el("div", "pager");
+  const prev = el("button", "pager__btn", "‹ Prev"); prev.type = "button";
+  const next = el("button", "pager__btn", "Next ›"); next.type = "button";
+  const info = el("span", "pager__info", "");
+  pager.append(prev, info, next); c.append(pager);
+
+  const filtered = () => {
     const q = search.value.trim().toLowerCase(), pf = party.value, tf = type.value;
+    return records.filter((r) =>
+      (pf === "all party" || r.party === pf) &&
+      (tf === "all types" || r.type === tf) &&
+      (!q || (r.domain + " " + r.url).toLowerCase().includes(q)));
+  };
+
+  function draw() {
+    const list = filtered();
+    const pages = Math.max(1, Math.ceil(list.length / PER));
+    page = Math.min(Math.max(0, page), pages - 1);
+    const start = page * PER;
+    const slice = list.slice(start, start + PER);
     tbody.replaceChildren();
-    let shown = 0;
-    for (const r of records) {
-      if (pf !== "all party" && r.party !== pf) continue;
-      if (tf !== "all types" && r.type !== tf) continue;
-      if (q && !(r.domain + " " + r.url).toLowerCase().includes(q)) continue;
-      if (shown++ >= 500) break;
+    for (const r of slice) {
       const tr = el("tr");
       const dot = el("td"); dot.append(el("span", `dot dot--${sevType(r)}`)); tr.append(dot);
       const dc = el("td"); dc.append(el("span", "dom__d", r.domain)); if (r.company) dc.append(el("span", "dom__c", " · " + r.company)); tr.append(dc);
@@ -254,9 +271,15 @@ function explorerCard(records) {
       const u = el("td", "url"); u.append(el("span", null, r.url)); tr.append(u);
       tbody.append(tr);
     }
-    if (!shown) { const tr = el("tr"); tr.append(el("td", "muted-note", "No requests match.")); tbody.append(tr); }
+    if (!slice.length) { const tr = el("tr"); tr.append(el("td", "muted-note", "No requests match.")); tbody.append(tr); }
+    info.textContent = list.length ? `${start + 1}–${Math.min(start + PER, list.length)} of ${list.length}` : "0 of 0";
+    prev.disabled = page === 0;
+    next.disabled = page >= pages - 1;
+    pager.style.display = list.length > PER ? "" : "none";
   }
-  [search, party, type].forEach((e) => e.addEventListener("input", draw));
+  prev.addEventListener("click", () => { page--; draw(); });
+  next.addEventListener("click", () => { page++; draw(); });
+  [search, party, type].forEach((e) => e.addEventListener("input", () => { page = 0; draw(); }));
   draw();
   return c;
 }

@@ -189,6 +189,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .wf__tick:first-child { transform: none; }
 .wf__legend { display: flex; gap: 16px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
 .wf__leg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+/* scroller — keeps a long timeline compact, axis pinned at the top */
+.wf__scroll { max-height: 440px; overflow-y: auto; overflow-x: hidden; margin: 0 -2px; padding: 0 2px; }
+.wf__scroll::-webkit-scrollbar { width: 10px; }
+.wf__scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+.wf__scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.22); }
+.wf__scroll > .wf:nth-of-type(even) { background: rgba(255,255,255,.018); }
+.wf--axis { position: sticky; top: 0; z-index: 2; background: #0c0c14; padding-bottom: 7px; margin-bottom: 3px; box-shadow: 0 1px 0 var(--line); }
+.wf--axis:hover { background: #0c0c14; }
 
 /* grade panel */
 .gradewhy { display: flex; flex-direction: column; gap: 14px; }
@@ -221,6 +229,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .url { max-width: 360px; }
 .url span { font-family: var(--mono); font-size: 11px; color: var(--faint); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .muted-note { font-size: 12px; color: var(--faint); padding: 10px 0; }
+.pager { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 13px 18px; border-top: 1px solid var(--line); }
+.pager__btn { font: inherit; font-size: 12.5px; color: var(--soft); background: var(--glass-2); border: 1px solid var(--line); border-radius: 9px; padding: 7px 16px; cursor: pointer; transition: color .2s, border-color .2s; }
+.pager__btn:hover:not(:disabled) { color: #fff; border-color: var(--c1); }
+.pager__btn:disabled { opacity: .4; cursor: default; }
+.pager__info { font-family: var(--mono); font-size: 12px; color: var(--muted); min-width: 120px; text-align: center; }
 
 @media (max-width: 760px) { .rgrid { grid-template-columns: 1fr; } .appbar__links { display: none; } .wf { grid-template-columns: 96px 1fr 48px; } .gscale { grid-template-columns: repeat(5, 1fr); gap: 5px; } .gcell b { font-size: 18px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; } }
