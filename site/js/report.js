@@ -20,6 +20,41 @@ const fmtBytes = (n) => !n ? "0" : n < 1024 ? n + " B" : n < 1048576 ? (n / 1024
 function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
 function card(title, ...kids) { const c = el("section", "card"); c.append(el("div", "card__head", title)); const b = el("div", "card__body"); b.append(...kids); c.append(b); return c; }
 const sevType = (r) => r.tracking ? "track" : r.party === "third" ? "third" : "first";
+const fmtMs = (ms) => ms < 1000 ? Math.round(ms) + " ms" : (ms / 1000).toFixed(2) + " s";
+
+// must match core/aggregate.js privacyGrade(): score = trackers*2 + thirdParties + piiLeaks*3 + insecure
+const GRADE_SCALE = [
+  { g: "A", label: "Clean", range: "0" },
+  { g: "B", label: "Light", range: "1–4" },
+  { g: "C", label: "Moderate", range: "5–10" },
+  { g: "D", label: "Heavy", range: "11–20" },
+  { g: "F", label: "Very heavy", range: "21+" },
+];
+
+function gradeCard(t) {
+  const score = t.trackers * 2 + t.thirdParties + (t.piiLeaks || 0) * 3 + (t.insecure || 0);
+  const body = el("div", "gradewhy");
+  body.append(el("div", "gscore", `Privacy score ${score} → grade ${t.grade}`));
+
+  const comps = el("div", "gcomp");
+  const part = (n, label, mult) => { if (!n) return; const c = el("span", "gpart"); c.append(el("b", null, String(n * (mult || 1))), el("span", null, `${n} ${label}${mult ? ` ×${mult}` : ""}`)); comps.append(c); };
+  part(t.trackers, "trackers", 2);
+  part(t.thirdParties, "3rd-party domains", 1);
+  part(t.piiLeaks, "PII leaks", 3);
+  part(t.insecure, "insecure requests", 1);
+  if (!comps.children.length) { const c = el("span", "gpart gpart--ok"); c.append(el("b", null, "✓"), el("span", null, "nothing flagged")); comps.append(c); }
+  body.append(comps);
+
+  body.append(el("div", "gscale__title", "Grade scale — lower score is cleaner"));
+  const scale = el("div", "gscale");
+  for (const sc of GRADE_SCALE) {
+    const cell = el("div", `gcell gcell--${sc.g}` + (sc.g === t.grade ? " is-active" : ""));
+    cell.append(el("b", null, sc.g), el("span", "gcell__r", sc.range), el("span", "gcell__l", sc.label));
+    scale.append(cell);
+  }
+  body.append(scale);
+  return card("Why this grade", body);
+}
 
 function barList(obj) {
   const wrap = document.createDocumentFragment();
@@ -70,6 +105,9 @@ function render(data) {
     stat("cookies set", String(t.cookies || 0)),
   );
   report.append(stats);
+
+  /* why this grade + A–F scale */
+  report.append(gradeCard(t));
 
   /* PII leaks */
   if (s.pii && s.pii.length) {
@@ -144,19 +182,44 @@ function waterfallCard(records) {
   const rows = withT.slice(0, 80);
   const min = rows.length ? rows[0].started : 0;
   const span = Math.max(1, ...rows.map((r) => (r.started - min) + (r.duration || 0)));
-  const body = document.createDocumentFragment();
+
+  const c = el("section", "card");
+  const head = el("div", "card__head card__head--row");
+  head.append(el("span", null, "Timeline"), el("span", "wf__total", `${fmtMs(span)} span`));
+  c.append(head);
+  const body = el("div", "card__body");
+
+  /* time axis */
+  const axis = el("div", "wf wf--axis");
+  axis.append(el("span", "wf__label", ""));
+  const ax = el("div", "wf__axis");
+  for (let i = 0; i <= 4; i++) { const tick = el("span", "wf__tick", fmtMs((span * i) / 4)); tick.style.left = i * 25 + "%"; ax.append(tick); }
+  axis.append(ax, el("span", "wf__dur", ""));
+  body.append(axis);
+
+  /* rows */
   for (const r of rows) {
     const row = el("div", "wf");
-    row.append(el("span", "wf__label", r.domain));
+    const label = el("span", "wf__label", r.domain); label.title = r.url;
     const track = el("div", "wf__track");
     const bar = el("span", `wf__bar wf__bar--${sevType(r)}`);
     bar.style.left = ((r.started - min) / span) * 100 + "%";
-    bar.style.width = Math.max(0.6, ((r.duration || 0) / span) * 100) + "%";
-    track.append(bar); row.append(track);
+    bar.style.width = Math.max(0.5, ((r.duration || 0) / span) * 100) + "%";
+    bar.title = `${r.type} · ${Math.round(r.duration || 0)}ms · ${fmtBytes(r.bytes || 0)}`;
+    track.append(bar);
+    row.append(label, track, el("span", "wf__dur", r.duration ? Math.round(r.duration) + "ms" : "—"));
     body.append(row);
   }
   if (withT.length > rows.length) body.append(el("div", "muted-note", `+${withT.length - rows.length} more (showing first 80 by start time)`));
-  return card("Timeline", body);
+
+  /* legend */
+  const legend = el("div", "wf__legend");
+  for (const [k, l] of [["first", "First-party"], ["third", "Third-party"], ["track", "Tracker"]]) {
+    const item = el("span", "wf__leg"); item.append(el("span", `dot dot--${k}`), el("span", null, l)); legend.append(item);
+  }
+  body.append(legend);
+  c.append(body);
+  return c;
 }
 
 function explorerCard(records) {
