@@ -2,7 +2,7 @@
 import assert from "node:assert";
 import { etld1 } from "../core/etld.js";
 import { classify } from "../core/classify.js";
-import { summarize, privacyGrade } from "../core/aggregate.js";
+import { summarize, privacyGrade, applyAllowlist } from "../core/aggregate.js";
 import { piiInUrl } from "../core/pii.js";
 
 let pass = 0;
@@ -81,5 +81,16 @@ ok(sig.totals.cookies === 3, "sums Set-Cookie counts");
 ok(sig.totals.fingerprinters === 1, "counts third-party fingerprinters");
 ok(sig.totals.piiLeaks === 1, "counts PII-leaking requests");
 ok(sig.pii.length === 1 && sig.pii[0].types.includes("email"), "PII grouped by domain with types");
+
+/* ── allowlist ───────────────────────────────────── */
+const al = [
+  { url: "https://google-analytics.com/c", domain: "google-analytics.com", party: "third", category: "analytics", type: "xhr/fetch", bytes: 10, tracking: true },
+  { url: "https://doubleclick.net/x", domain: "doubleclick.net", party: "third", category: "ads", type: "script", bytes: 10, tracking: true },
+];
+const muted = applyAllowlist(al, ["google-analytics.com"]);
+ok(muted[0].tracking === false && muted[0].allowed === true, "allowlisted domain → muted (tracking off)");
+ok(muted[1].tracking === true, "non-allowlisted domain untouched");
+ok(summarize(muted).totals.trackers === 1, "allowlist drops the muted tracker from the tally");
+ok(applyAllowlist(al, []) === al, "empty allowlist is a no-op (same array)");
 
 console.log(`✓ all ${pass} NetLens core assertions passed`);

@@ -1,15 +1,16 @@
 /* popup.js — ask the worker for the active tab's records, summarize, render. */
-import { summarize } from "../core/aggregate.js";
+import { summarize, applyAllowlist } from "../core/aggregate.js";
 
 const CAT_LABELS = {
   analytics: "Analytics", ads: "Ads", social: "Social", tagmanager: "Tag manager",
   cdn: "CDN", fonts: "Fonts", monitoring: "Monitoring", payment: "Payment",
   support: "Support/chat", video: "Video", consent: "Consent", abtest: "A/B testing",
-  "other-3p": "Other 3rd-party", "first-party": "First-party",
+  fingerprinting: "Fingerprinting", "other-3p": "Other 3rd-party", "first-party": "First-party",
 };
 const app = document.getElementById("app");
 const siteEl = document.getElementById("site");
-let active = { tabId: null, pageDomain: "", records: [], summary: null };
+let active = { tabId: null, pageDomain: "", raw: [], records: [], summary: null };
+let allow = new Set();
 
 const fmtBytes = (n) => {
   if (!n) return "0";
@@ -23,10 +24,25 @@ async function load() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
   try { siteEl.textContent = new URL(tab.url).hostname; } catch { siteEl.textContent = "—"; }
-  const res = await chrome.runtime.sendMessage({ type: "netlens:get", tabId: tab.id }).catch(() => null);
-  const records = res?.records || [];
-  active = { tabId: tab.id, pageDomain: res?.pageDomain || "", records, summary: records.length ? summarize(records) : null };
+  const [res, stored] = await Promise.all([
+    chrome.runtime.sendMessage({ type: "netlens:get", tabId: tab.id }).catch(() => null),
+    chrome.storage.local.get("netlens:allowlist").catch(() => ({})),
+  ]);
+  allow = new Set(stored["netlens:allowlist"] || []);
+  active = { tabId: tab.id, pageDomain: res?.pageDomain || "", raw: res?.records || [], records: [], summary: null };
+  recompute();
+}
+
+function recompute() {
+  active.records = applyAllowlist(active.raw, allow);
+  active.summary = active.records.length ? summarize(active.records) : null;
   render();
+}
+
+function toggleMute(domain) {
+  if (allow.has(domain)) allow.delete(domain); else allow.add(domain);
+  chrome.storage.local.set({ "netlens:allowlist": [...allow] }).catch(() => {});
+  recompute();
 }
 
 function render() {
@@ -70,7 +86,8 @@ function render() {
   const sec = el("div", "section");
   sec.append(el("div", "section__title", `Domains (${s.domains.length})`));
   for (const d of s.domains.slice(0, 16)) {
-    const row = el("div", "dom" + (d.party === "third" ? " dom--third" : ""));
+    const muted = allow.has(d.domain);
+    const row = el("div", "dom" + (d.party === "third" ? " dom--third" : "") + (muted ? " dom--muted" : ""));
     row.append(el("span", "dom__dot"));
     const name = el("div", "dom__name");
     name.append(el("div", "dom__d", d.domain));
@@ -78,6 +95,12 @@ function render() {
     row.append(name);
     if (d.category) row.append(el("span", "chip", d.category));
     row.append(el("span", "dom__n", `${d.requests}× · ${fmtBytes(d.bytes)}`));
+    if (d.party === "third") {
+      const m = el("button", "dom__mute", muted ? "unmute" : "mute");
+      m.type = "button"; m.title = muted ? "Stop muting this domain" : "Mute — stop counting this domain as a tracker";
+      m.addEventListener("click", () => toggleMute(d.domain));
+      row.append(m);
+    }
     sec.append(row);
   }
   app.append(sec);

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NetLens — Options</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <header class="top">
+    <img src="../icons/48.png" width="26" height="26" alt="" />
+    <h1>NetLens <span>options</span></h1>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <h2>Allowlisted domains</h2>
+      <p class="muted">Domains you trust. They still appear in reports, but stop counting as trackers in the privacy grade and badge. (You can also mute a domain straight from the popup.)</p>
+      <div class="add">
+        <input id="domain" type="text" placeholder="e.g. cdn.example.com" autocomplete="off" spellcheck="false" />
+        <button id="add" class="btn">Add</button>
+      </div>
+      <p id="err" class="err"></p>
+      <ul id="list" class="list"></ul>
+    </section>
+
+    <p class="foot">NetLens runs 100% locally — this list is stored only in your browser.</p>
+  </main>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>

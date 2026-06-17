@@ -7,7 +7,7 @@
 import { classify } from "./core/classify.js";
 import { etld1 } from "./core/etld.js";
 import { piiInUrl } from "./core/pii.js";
-import { summarize } from "./core/aggregate.js";
+import { summarize, applyAllowlist } from "./core/aggregate.js";
 
 // in-depth report site: localhost when unpacked (dev), the live site once published
 const isDev = !("update_url" in chrome.runtime.getManifest());
@@ -43,6 +43,10 @@ function setBadge(tabId) {
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.action.setBadgeBackgroundColor({ color: "#e879f9" }).catch(() => {});
+  chrome.contextMenus.create({ id: "netlens-report", title: "Analyze this page with NetLens", contexts: ["page", "action"] }, () => void chrome.runtime.lastError);
+});
+chrome.contextMenus?.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === "netlens-report" && tab) openReport(tab.id);
 });
 
 chrome.webRequest.onBeforeRequest.addListener((d) => {
@@ -127,7 +131,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 const pendingInject = new Map(); // reportTabId → full payload
 async function openReport(tabId) {
   const t = tabs.get(tabId);
-  const records = t ? [...t.byId.values()] : [];
+  let records = t ? [...t.byId.values()] : [];
+  const stored = await chrome.storage.local.get("netlens:allowlist").catch(() => ({}));
+  records = applyAllowlist(records, stored["netlens:allowlist"] || []);
   const page = t ? t.pageDomain : "";
   const security = t ? t.security : {};
   const summary = summarize(records);

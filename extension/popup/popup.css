@@ -88,4 +88,9 @@ body::before { /* ambient glow */
 .btn:not(.btn--ghost):hover { box-shadow: 0 9px 24px rgba(232,121,249,.45); background-position: 100% 0; transform: translateY(-1px); }
 .btn--ghost { color: var(--soft); background: var(--glass-2); border: 1px solid var(--line-2); }
 .btn--ghost:hover { color: var(--text); border-color: var(--c1); }
+.dom__mute { font-family: var(--mono); font-size: 9px; color: var(--muted); padding: 2px 7px; border-radius: 6px;
+  background: var(--glass-2); border: 1px solid var(--line); flex-shrink: 0; cursor: pointer; }
+.dom__mute:hover { color: var(--text); border-color: var(--line-2); }
+.dom--muted { opacity: .45; }
+.dom--muted .dom__dot { background: var(--muted) !important; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

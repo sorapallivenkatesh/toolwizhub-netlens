@@ -8,6 +8,13 @@ function bump(obj, key, bytes) {
   e.requests++; e.bytes += bytes;
 }
 
+/** Mute user-allowlisted domains: they stay listed but no longer count as trackers. */
+export function applyAllowlist(records, allowlist) {
+  if (!allowlist || !allowlist.length) return records;
+  const set = allowlist instanceof Set ? allowlist : new Set(allowlist);
+  return records.map((r) => (set.has(r.domain) ? { ...r, tracking: false, allowed: true } : r));
+}
+
 /** A→F privacy grade. `penalty` lets PII leaks / insecure requests worsen it. */
 export function privacyGrade(trackers, thirdParties, penalty = 0) {
   const score = trackers * 2 + thirdParties + penalty;
