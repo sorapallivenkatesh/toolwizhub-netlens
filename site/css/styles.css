@@ -63,8 +63,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .brand { display: inline-flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: var(--r); background: linear-gradient(180deg,#1d2333,#12151f); border: 1px solid var(--line); }
 .brand__mark { width: 42px; height: 42px; border-radius: 11px; object-fit: cover; box-shadow: 0 6px 18px rgba(0,0,0,.5); }
 .brand__text { display: flex; flex-direction: column; gap: 3px; line-height: 1.15; }
-.brand__text strong { font-family: var(--display); font-size: 16px; font-weight: 700; color: var(--text); }
-.brand__text span { font-size: 9.5px; letter-spacing: .16em; color: var(--muted); font-weight: 700; }
+/* brand pill stays dark in both themes (gold logo needs a dark backing) → keep its text light */
+.brand__text strong { font-family: var(--display); font-size: 16px; font-weight: 700; color: #f4f5fb; }
+.brand__text span { font-size: 9.5px; letter-spacing: .16em; color: #9298b0; font-weight: 700; }
 .appbar__links { display: flex; align-items: center; gap: 22px; font-size: 14px; color: var(--soft); }
 .appbar__links a:hover { color: var(--text); }
 
