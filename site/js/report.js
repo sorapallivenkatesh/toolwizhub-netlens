@@ -153,15 +153,24 @@ function companyCard(domains) {
     c.requests += d.requests; c.bytes += d.bytes; c.domains++;
   }
   const list = [...map.values()].sort((a, b) => b.requests - a.requests);
+  const max = Math.max(1, ...list.map((c) => c.requests));
   const body = document.createDocumentFragment();
   for (const c of list.slice(0, 20)) {
-    const row = el("div", "dom");
-    const name = el("div", "dom__name"); name.append(el("div", "dom__d", c.company), el("div", "dom__c", `${c.domains} domain${c.domains > 1 ? "s" : ""}`));
-    row.append(name, el("span", "num", `${c.requests}× · ${fmtBytes(c.bytes)}`));
+    const row = el("div", "party");
+    const badge = el("span", "party__badge", (c.company[0] || "?").toUpperCase());
+    badge.style.setProperty("--h", String(hue(c.company)));
+    const main = el("div", "party__main");
+    main.append(el("div", "party__name", c.company));
+    const bar = el("div", "party__bar"); const fill = el("div", "party__fill"); fill.style.width = Math.max(4, (c.requests / max) * 100) + "%"; bar.append(fill);
+    main.append(bar);
+    const stat = el("div", "party__stat");
+    stat.append(el("span", "party__n", `${c.requests}× · ${fmtBytes(c.bytes)}`), el("span", "party__dom", `${c.domains} domain${c.domains > 1 ? "s" : ""}`));
+    row.append(badge, main, stat);
     body.append(row);
   }
   return card(`Who it talks to (${list.length} parties)`, body);
 }
+const hue = (s) => { let h = 0; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; };
 
 function weightCard(records) {
   const top = [...records].sort((a, b) => (b.bytes || 0) - (a.bytes || 0)).slice(0, 12);

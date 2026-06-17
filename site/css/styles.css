@@ -229,6 +229,20 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .url { max-width: 360px; }
 .url span { font-family: var(--mono); font-size: 11px; color: var(--faint); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .muted-note { font-size: 12px; color: var(--faint); padding: 10px 0; }
+
+/* "Who it talks to" — company rows with initial badge + share bar */
+.party { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 14px; padding: 11px 4px; border-bottom: 1px solid var(--line); }
+.party:last-child { border-bottom: none; }
+.party:hover { background: rgba(255,255,255,.025); border-radius: 8px; }
+.party__badge { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 14px;
+  color: hsl(var(--h, 280) 75% 78%); background: hsl(var(--h, 280) 60% 55% / .16); border: 1px solid hsl(var(--h, 280) 60% 60% / .35); }
+.party__main { min-width: 0; }
+.party__name { font-family: var(--mono); font-size: 13px; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 7px; }
+.party__bar { height: 5px; border-radius: 999px; background: rgba(255,255,255,.05); overflow: hidden; }
+.party__fill { height: 100%; border-radius: 999px; background: var(--grad); box-shadow: 0 0 10px rgba(232,121,249,.35); }
+.party__stat { text-align: right; display: flex; flex-direction: column; gap: 3px; align-items: flex-end; }
+.party__n { font-family: var(--mono); font-size: 11.5px; color: var(--soft); white-space: nowrap; }
+.party__dom { font-size: 10px; color: var(--faint); }
 .pager { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 13px 18px; border-top: 1px solid var(--line); }
 .pager__btn { font: inherit; font-size: 12.5px; color: var(--soft); background: var(--glass-2); border: 1px solid var(--line); border-radius: 9px; padding: 7px 16px; cursor: pointer; transition: color .2s, border-color .2s; }
 .pager__btn:hover:not(:disabled) { color: #fff; border-color: var(--c1); }
