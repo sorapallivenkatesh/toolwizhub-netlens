@@ -14,3 +14,6 @@ CLAUDE.md
 *.zip
 dist/
 web-ext-artifacts/
+
+# store assets (local; regenerate with store/build.py)
+store/*
