@@ -124,4 +124,17 @@ document.getElementById("report").addEventListener("click", () => {
   window.close();
 });
 
+// ---- gentle "rate it" nudge: after a few opens, once, dismissible -----------
+const RATE_KEY = "netlens:rate";
+const markRated = () => chrome.storage.local.set({ [RATE_KEY]: { opens: 99, done: true } });
+(async () => {
+  const st = (await chrome.storage.local.get(RATE_KEY))[RATE_KEY] || { opens: 0, done: false };
+  if (st.done) return;
+  st.opens += 1;
+  await chrome.storage.local.set({ [RATE_KEY]: st });
+  if (st.opens >= 3) document.getElementById("rate").hidden = false;
+})();
+document.getElementById("rate-x").addEventListener("click", () => { markRated(); document.getElementById("rate").hidden = true; });
+document.getElementById("rate-link").addEventListener("click", markRated);
+
 load();
